@@ -12,6 +12,5 @@
                      35.8,
                      39
                  ],
-    "shapefile_path":  "config/shp/gadm41_ESP_4.shp",
-    "version":  "1.0.1"
+    "shapefile_path":  "config/shp/gadm41_ESP_4.shp"
 }
