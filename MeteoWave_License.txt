@@ -1,6 +1,6 @@
 
 MeteoWave Usage License
-Version 1.0 - [Date]
+Version 1.0.0 - 2024
 
 1. Usage Rights
 
