@@ -38,7 +38,7 @@ if "%TOKEN%"=="" (
 )
 
 REM Configuración inicial
-SET REPO=Adravilag/MeteoPy
+SET REPO=Adravilag/MeteoWave
 
 REM Obtener la última etiqueta creada
 echo Obteniendo la última etiqueta en el repositorio...

@@ -1,7 +1,7 @@
 
-# MeteoPy
+# MeteoWave
 
-**MeteoPy** es una aplicación de Python que utiliza archivos SHP para visualizar la temperatura media mediante áreas coloreadas en Andalucía y otras regiones de España. Los datos meteorológicos se obtienen de la API de Open Meteo, y la aplicación permite generar históricos y visualizar datos en un mapa interactivo.
+**MeteoWave** es una aplicación de Python que utiliza archivos SHP para visualizar la temperatura media mediante áreas coloreadas en Andalucía y otras regiones de España. Los datos meteorológicos se obtienen de la API de Open Meteo, y la aplicación permite generar históricos y visualizar datos en un mapa interactivo.
 
 ## Características
 
@@ -18,8 +18,8 @@
 Clona el repositorio en tu máquina local:
 
 ```bash
-git clone https://github.com/usuario/MeteoPy.git
-cd MeteoPy
+git clone https://github.com/usuario/MeteoWave.git
+cd MeteoWave
 ```
 
 ### 2. Crear y Activar un Entorno Virtual (Opcional)
@@ -61,7 +61,7 @@ pip freeze > requirements.txt
 
 ## Configuración
 
-La aplicación **MeteoPy** utiliza un archivo `config.json` para definir parámetros clave, incluyendo las coordenadas de visualización, el tamaño de puntos y límites de la región en el mapa. Asegúrate de revisar o modificar este archivo según tus necesidades.
+La aplicación **MeteoWave** utiliza un archivo `config.json` para definir parámetros clave, incluyendo las coordenadas de visualización, el tamaño de puntos y límites de la región en el mapa. Asegúrate de revisar o modificar este archivo según tus necesidades.
 
 ### Archivos de Configuración
 
@@ -155,11 +155,11 @@ Al hacer doble clic en estos archivos `.bat`, puedes ejecutar los scripts sin ne
 
 ## Comentario del Desarrollador
 
-El propósito de **MeteoPy** es permitir la recopilación de datos meteorológicos y su visualización en un mapa interactivo. Este proyecto es una oportunidad para aplicar conocimientos en APIs REST, manejo de datos geoespaciales y visualización en Python. Las características principales del mapa incluyen la variación del tamaño y color de las áreas según la temperatura, y la aparición de nombres de localidades al hacer zoom.
+El propósito de **MeteoWave** es permitir la recopilación de datos meteorológicos y su visualización en un mapa interactivo. Este proyecto es una oportunidad para aplicar conocimientos en APIs REST, manejo de datos geoespaciales y visualización en Python. Las características principales del mapa incluyen la variación del tamaño y color de las áreas según la temperatura, y la aparición de nombres de localidades al hacer zoom.
 
 ## Reconocimiento
 Este proyecto fue desarrollado en su totalidad con el apoyo de **ChatGPT** de OpenAI. La colaboración con esta herramienta de inteligencia artificial permitió completar un trabajo que de otra manera habría llevado varios meses, logrando un resultado de calidad en menos de una semana.
 
 ## Motivación y Enfoque
-El propósito del proyecto **MeteoPy** no es únicamente evaluar mis habilidades en programación, sino demostrar mi capacidad para **analizar**, **organizar** y **gestionar** un proyecto complejo de manera eficiente. La intención fue aprovechar herramientas modernas para **optimizar el flujo de trabajo** y asegurar un resultado robusto en un plazo reducido. Este enfoque destaca la habilidad para adaptarse y utilizar recursos innovadores, una competencia clave en el desarrollo de proyectos tecnológicos.
+El propósito del proyecto **MeteoWave** no es únicamente evaluar mis habilidades en programación, sino demostrar mi capacidad para **analizar**, **organizar** y **gestionar** un proyecto complejo de manera eficiente. La intención fue aprovechar herramientas modernas para **optimizar el flujo de trabajo** y asegurar un resultado robusto en un plazo reducido. Este enfoque destaca la habilidad para adaptarse y utilizar recursos innovadores, una competencia clave en el desarrollo de proyectos tecnológicos.
 

@@ -43,10 +43,13 @@ if not os.path.exists(shapefile_path):
         print(f"Error: No se encontró el archivo de shapes en '{shapefile_path}' ni en '{abs_shapefile_path}'.")
         exit()
 
-# Cargar el shapefile de España y filtrar Andalucía
+# Cargar el shapefile de España y filtrar Andalucía y Comunidad Valenciana
 try:
     espana_shapefile = gpd.read_file(shapefile_path)
-    andalucia = espana_shapefile[espana_shapefile['NAME_1'] == 'Andalucía']
+    comunidades = {
+        "ANDALUCIA": espana_shapefile[espana_shapefile['NAME_1'] == 'Andalucía'],
+        "VALENCIA": espana_shapefile[espana_shapefile['NAME_1'] == 'Comunidad Valenciana']  # Ajuste aquí para asegurar coincidencia exacta
+    }
 except Exception as e:
     print(f"Error al cargar el archivo de shapes: {e}")
     exit()
@@ -87,19 +90,12 @@ if archivo_seleccionado is None:
     exit()  # Terminar si no hay archivos disponibles
 
 # Extraer la fecha del nombre del archivo
-# Asume que el archivo tiene el formato 'MeteoData_YYYYMMDD.xlsx'
 try:
-    fecha_archivo = archivo_seleccionado.split('_')[1].split('.')[0]  # Extrae 'YYYYMMDD'
-    fecha_formateada = f"{fecha_archivo[:4]}-{fecha_archivo[4:6]}-{fecha_archivo[6:]}"  # Formato 'YYYY-MM-DD'
+    fecha_archivo = archivo_seleccionado.split('_')[1].split('.')[0]
+    fecha_formateada = f"{fecha_archivo[:4]}-{fecha_archivo[4:6]}-{fecha_archivo[6:]}"
 except IndexError:
     print("Error: El archivo seleccionado no tiene la fecha en el formato esperado.")
     exit()
-
-# Cargar el archivo Excel seleccionado y listar las hojas disponibles
-archivo_path = os.path.join(data_dir, archivo_seleccionado)
-excel_file = pd.ExcelFile(archivo_path)
-hojas_disponibles = excel_file.sheet_names
-
 
 # Cargar el archivo Excel seleccionado y listar las hojas disponibles
 archivo_path = os.path.join(data_dir, archivo_seleccionado)
@@ -128,29 +124,39 @@ df = pd.read_excel(archivo_path, sheet_name=sheet_name)
 # Asegúrate de que las columnas de coordenadas están en el formato correcto
 df[['Latitude', 'Longitude']] = df['Coordinates'].str.split(', ', expand=True).astype(float)
 
-# Cargar el mapa de España y Andalucía
-espana_shapefile = gpd.read_file(shapefile_path)
-andalucia = espana_shapefile[espana_shapefile['NAME_1'] == 'Andalucía']
-
-# Asignar un umbral predeterminado para mostrar nombres en el DataFrame de datos meteorológicos
-df['LabelThreshold'] = label_threshold
+# Seleccionar la región en el mapa según la comunidad seleccionada
+region_map = comunidades.get(sheet_name.upper(), None)  # Convertir a mayúsculas para coincidencia
+if region_map is None or region_map.empty:
+    print(f"Error: No se encontró la región correspondiente para '{sheet_name}' en el shapefile.")
+    exit()  # Terminar si no se encuentra la región
 
 # Crear una figura
 fig, ax1 = plt.subplots(figsize=(10, 8))
-fig.canvas.manager.set_window_title("Mapa de Andalucía - Datos Meteorológicos")
+fig.canvas.manager.set_window_title(f"Mapa de {sheet_name} - Datos Meteorológicos")
 
 # Crear una variable global para almacenar la selección actual
 selected_data = 'temperature_min'  # Opción predeterminada: temperatura mínima
 
 scatter_points = []
-name_points = [(row['Name'], row['Longitude'], row['Latitude'], row['LabelThreshold'], None, None) for _, row in df.iterrows()]
+name_points = [(row['Name'], row['Longitude'], row['Latitude'], label_threshold, None, None) for _, row in df.iterrows()]
 
-# Dentro de la función update_scatter
+# Configuración de los límites iniciales para la Comunidad Valenciana
+valencia_xlim = (-2, 3)  # Ajuste de longitud para que Valencia se vea mejor
+valencia_ylim = (37.5, 41)  # Ajuste de latitud para que Valencia se vea mejor
+
+# Función de actualización con coordenadas iniciales ajustadas para Valencia
 def update_scatter():
     ax1.clear()
-    andalucia.boundary.plot(ax=ax1, linewidth=0.5, color='lightgray')
-    ax1.set_xlim(original_xlim)
-    ax1.set_ylim(original_ylim)
+    region_map.boundary.plot(ax=ax1, linewidth=0.5, color='lightgray')
+
+    # Ajustar la vista inicial a los límites de Valencia si se selecciona Valencia
+    if sheet_name.upper() == "VALENCIA":
+        ax1.set_xlim(valencia_xlim)
+        ax1.set_ylim(valencia_ylim)
+    else:
+        ax1.set_xlim(original_xlim)
+        ax1.set_ylim(original_ylim)
+
     ax1.set_xlabel('Longitud')
     ax1.set_ylabel('Latitud')
     
@@ -176,9 +182,7 @@ def update_scatter():
         title = 'Precipitación Acumulada (mm)'
         cmap = 'Blues'
 
-    # Normalización de colores para el rango de datos
     norm = Normalize(vmin=data.min(), vmax=data.max())
-
     scatter_points.clear()
     
     for i, row in df.iterrows():
@@ -188,37 +192,33 @@ def update_scatter():
         current_data = data[i]
         color = plt.get_cmap(cmap)(norm(current_data))
         
-        # Tamaño del punto
         point_size = min_point_size + (max_point_size - min_point_size) * (current_data - data.min()) / (data.max() - data.min())
 
         scatter = ax1.scatter(row['Longitude'], row['Latitude'], color=color, s=point_size, alpha=0.7)
         scatter_points.append((scatter, point_size))
-        name_points[i] = (row['Name'], row['Longitude'], row['Latitude'], row['LabelThreshold'], point_size, current_data)
+        name_points[i] = (row['Name'], row['Longitude'], row['Latitude'], label_threshold, point_size, current_data)
     
-    # Mostrar la localidad seleccionada en el título
     ax1.set_title(f'{sheet_name} - {title} - {fecha_formateada}')
     update_labels()
     fig.canvas.draw_idle()
 
 # Función para actualizar etiquetas de nombres usando el umbral y zoom
 def update_labels():
-    zoom_level = abs(ax1.get_xlim()[1] - ax1.get_xlim()[0])  # Nivel de zoom en el eje X
+    zoom_level = abs(ax1.get_xlim()[1] - ax1.get_xlim()[0])
     
     for label in ax1.texts:
         label.remove()
     
     for locality, lon, lat, threshold, size, value in name_points:
         if size and size >= threshold:
-            if zoom_level < 2:  # Si el nivel de zoom es cercano, muestra el valor
+            if zoom_level < 2:
                 ax1.text(lon, lat, f"{locality}", 
                          fontsize=8, ha='center', va='bottom', alpha=0.8)
             else:
                 ax1.text(lon, lat, locality, fontsize=8, ha='center', va='bottom', alpha=0.8)
 
-# Detectar el cambio de zoom y actualizar etiquetas
 fig.canvas.mpl_connect('draw_event', lambda event: update_labels())
 
-# Crear un texto para el subtítulo (que muestra información al pasar el ratón)
 subtitle_text = ax1.text(0.5, -0.1, '', fontsize=10, ha='center', va='center', color='black', 
                           bbox=dict(boxstyle='round,pad=0.5', edgecolor='none', facecolor='white'), transform=ax1.transAxes)
 
@@ -243,9 +243,6 @@ def on_mouse_move(event):
             if event.xdata is not None and event.ydata is not None:
                 distance = ((event.xdata - lon) ** 2 + (event.ydata - lat) ** 2) ** 0.5
                 if distance < 0.2:  # Umbral de proximidad aumentado para depuración
-                    # Depuración: imprime información del punto en consola
-                    print(f"Detectado: {locality}, Valor: {value} {unit_dict[selected_data]}")
-
                     # Mostrar el valor y la unidad en el subtítulo
                     subtitle_text.set_text(f'{locality}: {value} {unit_dict[selected_data]}')
                     subtitle_text.set_visible(True)

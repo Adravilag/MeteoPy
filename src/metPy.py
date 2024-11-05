@@ -31,7 +31,7 @@ def obtener_fechas_disponibles_api(latitud, longitud):
             return data['daily']['time']
         elif response.status_code == 429:
             print("Demasiadas solicitudes. Esperando antes de reintentar...")
-            time.sleep(5)  # Espera 5 segundos antes de reintentar
+            time.sleep(5)
             intento += 1
         else:
             print(f"Error en la solicitud de fechas disponibles: Código {response.status_code}")
@@ -40,16 +40,27 @@ def obtener_fechas_disponibles_api(latitud, longitud):
     return []
 
 
-def verificar_archivo_existente(fecha):
-    # Convertir la fecha a formato 'YYYYMMDD' para coincidir con el nombre del archivo
+def verificar_archivo_existente(fecha, comunidad):
     fecha_str = fecha.replace("-", "")
     archivo = os.path.join(data_dir, f"MeteoData_{fecha_str}.xlsx")
     
-    # Verificar si el archivo existe
     if os.path.exists(archivo):
         ultima_actualizacion = datetime.fromtimestamp(os.path.getmtime(archivo)).strftime('%Y-%m-%d %H:%M:%S')
-        return True, ultima_actualizacion
-    return False, None
+        datos_rellenos = verificar_datos_rellenos(archivo, comunidad)
+        return True, ultima_actualizacion, datos_rellenos
+    return False, None, False
+
+def verificar_datos_rellenos(archivo, comunidad):
+    """Verifica si hay datos rellenados en la hoja correspondiente a la comunidad autónoma."""
+    wb = load_workbook(archivo)
+    if comunidad not in wb.sheetnames:
+        return False
+    ws = wb[comunidad]
+    
+    for row in range(2, ws.max_row + 1):  # Asumimos que la fila 1 tiene encabezados
+        if ws[f'H{row}'].value is not None:  # Verifica la columna 'H' como referencia
+            return True
+    return False
 
 def menu_opciones_avanzadas():
     global base_size, max_point_size, min_point_size, label_threshold
@@ -76,7 +87,7 @@ def copiar_plantilla(fecha):
     return archivo_destino
 
 def seleccionar_comunidad():
-    comunidades = ["ANDALUCIA"]
+    comunidades = ["ANDALUCIA", "VALENCIA"]
     print("\nComunidades Autónomas disponibles:")
     for i, comunidad in enumerate(comunidades, start=1):
         print(f"{i}. {comunidad}")
@@ -95,40 +106,38 @@ def procesar_datos(fecha, comunidad):
     wb = load_workbook(archivo_destino)
     ws = wb[comunidad]
 
-    # Convertir la fecha proporcionada a formato de cadena
     fecha_str = fecha.strftime('%Y-%m-%d')
     
-    for row in range(2, ws.max_row + 1):  # Asumimos que la fila 1 tiene encabezados
+    for row in range(2, ws.max_row + 1):
         try:
-            coordenadas = ws[f'C{row}'].value  # Suponiendo que las coordenadas están en la columna C
+            coordenadas = ws[f'C{row}'].value
             if coordenadas:
                 latitud, longitud = map(float, coordenadas.split(', '))
                 datos = obtener_datos_meteo(latitud, longitud, fecha)
 
                 if datos:
-                    # Encontrar la posición de la fecha en la lista de tiempos
                     if fecha_str in datos['daily']['time']:
                         index = datos['daily']['time'].index(fecha_str)
 
-                        # Asignar los datos meteorológicos a las celdas correspondientes usando la posición index
-                        ws[f'H{row}'] = datos['daily']['temperature_2m_min'][index]      # Min Temperature
-                        ws[f'I{row}'] = datos['daily']['temperature_2m_max'][index]      # Max Temperature
-                        ws[f'J{row}'] = datos['daily']['windspeed_10m_max'][index]       # Maximum Wind Speed
-                        ws[f'K{row}'] = datos['daily']['windgusts_10m_max'][index]       # Maximum Wind Gusts
-                        ws[f'L{row}'] = datos['daily']['winddirection_10m_dominant'][index]  # Dominant Wind Direction
-                        ws[f'M{row}'] = datos['daily']['precipitation_sum'][index]       # Precipitation
-                        ws[f'N{row}'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')     # Fecha de creación
+                        ws[f'H{row}'] = datos['daily']['temperature_2m_min'][index]
+                        ws[f'I{row}'] = datos['daily']['temperature_2m_max'][index]
+                        ws[f'J{row}'] = datos['daily']['windspeed_10m_max'][index]
+                        ws[f'K{row}'] = datos['daily']['windgusts_10m_max'][index]
+                        ws[f'L{row}'] = datos['daily']['winddirection_10m_dominant'][index]
+                        ws[f'M{row}'] = datos['daily']['precipitation_sum'][index]
+                        ws[f'N{row}'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                     else:
-                        print(f"Fecha {fecha_str} no encontrada en los datos meteorológicos para la ubicación especificada.")
+                        print(f"Fecha {fecha_str} no encontrada en los datos meteorológicos.")
         except Exception as e:
             print(f"Error al procesar la fila {row}: {e}")
 
-    # Guardar el archivo Excel con los datos actualizados
     wb.save(archivo_destino)
     print(f"Datos meteorológicos guardados en {archivo_destino}")
 
 def menu_principal():
-    latitud, longitud = 37.3891, -5.9845  # Ejemplo: coordenadas de Sevilla, Andalucía
+    latitud, longitud = 37.3891, -5.9845
+    comunidad = seleccionar_comunidad()
+    
     fechas_disponibles = obtener_fechas_disponibles_api(latitud, longitud)
     if not fechas_disponibles:
         print("No se encontraron fechas disponibles.")
@@ -144,8 +153,8 @@ def menu_principal():
         if opcion == '1':
             print("\nFechas disponibles:")
             for i, fecha in enumerate(fechas_disponibles, start=1):
-                existe, ultima_actualizacion = verificar_archivo_existente(fecha)
-                estado = f"(Existente - Última actualización: {ultima_actualizacion})" if existe else "(No existe)"
+                existe, ultima_actualizacion, datos_rellenos = verificar_archivo_existente(fecha, comunidad)
+                estado = f"(Existente - Última actualización: {ultima_actualizacion}, Datos llenos: {datos_rellenos})" if existe else "(No existe)"
                 print(f"{i}. {fecha} {estado}")
 
             while True:
@@ -159,7 +168,6 @@ def menu_principal():
                 except ValueError:
                     print("Entrada no válida. Por favor, introduce un número.")
 
-            comunidad = seleccionar_comunidad()
             procesar_datos(fecha, comunidad)
 
         elif opcion == '2':
