@@ -75,15 +75,20 @@ El archivo `config.json` contiene los siguientes parámetros:
 
 ```json
 {
-    "version": "1.1.0",
-    "base_size": 10,
-    "max_point_size": 500,
-    "min_point_size": 5,
-    "label_threshold": 400,
-    "default_selected_data": "ANDALUCIA",
-    "map_xlim": [-10.0, 5.0],
-    "map_ylim": [35.0, 45.0],
-    "shapefile_path": "config/shp/andalucia.shp"
+    "base_size":  10,
+    "max_point_size":  500,
+    "min_point_size":  5,
+    "label_threshold":  400,
+    "default_selected_data":  "temperature_mean",
+    "map_xlim":  [
+                     -7.6,
+                     -1.5
+                 ],
+    "map_ylim":  [
+                     35.8,
+                     39
+                 ],
+    "shapefile_path":  "config/shp/gadm41_ESP_4.shp"
 }
 ```
 
