@@ -155,5 +155,11 @@ Al hacer doble clic en estos archivos `.bat`, puedes ejecutar los scripts sin ne
 
 ## Comentario del Desarrollador
 
-El propósito de **MeteoPy** es permitir la recopilación de datos meteorológicos y su visualización en un mapa interactivo. Este proyecto es una oportunidad para aplicar conocimientos en APIs REST, manejo de datos geoespaciales y visualización en Python. Las características principales del mapa incluyen la variación del tamaño y color de las áreas según la temperatura, y la aparición de nombres de localidades al hacer zoom."# MeteoPy" 
-"# MeteoPy" 
+El propósito de **MeteoPy** es permitir la recopilación de datos meteorológicos y su visualización en un mapa interactivo. Este proyecto es una oportunidad para aplicar conocimientos en APIs REST, manejo de datos geoespaciales y visualización en Python. Las características principales del mapa incluyen la variación del tamaño y color de las áreas según la temperatura, y la aparición de nombres de localidades al hacer zoom.
+
+## Reconocimiento
+Este proyecto fue desarrollado en su totalidad con el apoyo de **ChatGPT** de OpenAI. La colaboración con esta herramienta de inteligencia artificial permitió completar un trabajo que de otra manera habría llevado varios meses, logrando un resultado de calidad en menos de una semana.
+
+## Motivación y Enfoque
+El propósito del proyecto **MeteoPy** no es únicamente evaluar mis habilidades en programación, sino demostrar mi capacidad para **analizar**, **organizar** y **gestionar** un proyecto complejo de manera eficiente. La intención fue aprovechar herramientas modernas para **optimizar el flujo de trabajo** y asegurar un resultado robusto en un plazo reducido. Este enfoque destaca la habilidad para adaptarse y utilizar recursos innovadores, una competencia clave en el desarrollo de proyectos tecnológicos.
+
