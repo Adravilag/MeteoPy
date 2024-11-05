@@ -1,0 +1,33 @@
+name: CI - Pruebas Unitarias
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v2
+
+      - name: Configurar Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'  # Cambia a la versión que uses en tu proyecto
+
+      - name: Instalar dependencias
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
+
+      - name: Ejecutar pruebas unitarias
+        run: |
+          source venv/bin/activate
+          python -m unittest discover -s tests

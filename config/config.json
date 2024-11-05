@@ -1,16 +1,16 @@
 {
-    "base_size":  10,
-    "max_point_size":  500,
-    "min_point_size":  5,
-    "label_threshold":  400,
-    "default_selected_data":  "temperature_mean",
-    "map_xlim":  [
-                     -7.6,
-                     -1.5
-                 ],
-    "map_ylim":  [
-                     35.8,
-                     39
-                 ],
-    "shapefile_path":  "config/shp/gadm41_ESP_4.shp"
+    "base_size": 10,
+    "max_point_size": 500,
+    "min_point_size": 5,
+    "label_threshold": 400,
+    "default_selected_data": "temperature_mean",
+    "map_xlim": [-7.6, -1.5],
+    "map_ylim": [35.8, 39],
+    "shapefile_path": "config/shp/gadm41_ESP_4.shp",
+    "language": "en",
+    "data_directory": "data", 
+    "comunidades": [
+        "ANDALUCIA",
+        "VALENCIA"
+    ]
 }

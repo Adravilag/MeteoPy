@@ -1,0 +1,27 @@
+
+MeteoWave Usage License
+Version 1.0 - [Date]
+
+1. Usage Rights
+
+MeteoWave is available under this license, which grants the user non-exclusive, non-transferable, and limited rights to use, modify, and distribute the software, subject to the conditions and limitations outlined below.
+
+2. Permissions and Conditions
+
+- Personal and Commercial Use: The user may use MeteoWave for both personal and commercial purposes.
+- Distribution: The user may distribute copies of the software, provided this license is included and passed on to any recipient.
+- Modifications: The user may modify the software, but any distribution of modified versions must clearly indicate the changes made and the original source of MeteoWave.
+
+3. Restrictions
+
+- No Warranty: This software is provided "as is," without any express or implied warranties. The user assumes full responsibility and risks associated with the use of MeteoWave.
+- Intellectual Property: The user may not remove or alter copyright notices, trademarks, or other proprietary notices that appear on the software.
+- Limitation of Liability: In no event shall the author or contributors of MeteoWave be liable for damages, including but not limited to data loss, indirect damages, or any other harm resulting from the use of this software.
+
+4. Contributions
+
+Contributions to the project's code are welcome. By submitting a contribution, the user agrees that their contribution may be used under the terms of this license and waives any rights to it, except for recognition as a contributor.
+
+5. Termination
+
+This license is valid until terminated. Failure to comply with any of the conditions described herein may result in automatic termination of the license. Upon termination, the user must cease all use of MeteoWave and delete all copies in their possession.

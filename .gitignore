@@ -2,3 +2,4 @@ other
 data
 .env
 venv/
+__pycache__
