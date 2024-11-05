@@ -158,3 +158,36 @@ Esto hará que todos los mensajes de la aplicación se muestren en inglés.
 
 El proyecto **MeteoWave** busca aplicar conocimientos de manejo de datos geoespaciales y visualización en Python, con el objetivo de crear una herramienta práctica y visual para la monitorización de datos meteorológicos.
 
+
+
+## CI/CD e Integración Continua
+
+La aplicación **MeteoWave** está configurada para utilizar un flujo de integración continua (CI/CD) a través de GitHub Actions. Esto asegura que cada cambio en el código desencadene un proceso de pruebas automáticas, verificando que los módulos y funciones principales se comporten de acuerdo a lo esperado.
+
+### Configuración de GitHub Actions
+
+Cada vez que se realiza un `push` o se abre un `pull request` en la rama principal, GitHub Actions ejecuta automáticamente el flujo de CI/CD configurado. Esto incluye:
+- Instalación de dependencias.
+- Configuración del entorno de pruebas.
+- Ejecución de pruebas unitarias para validar la funcionalidad de los módulos principales.
+
+### Script de Configuración Inicial
+
+El proyecto incluye un script `setup.bat` que permite automatizar la configuración inicial del entorno. Este script realiza las siguientes tareas:
+- Crea y activa un entorno virtual en `venv`.
+- Instala las dependencias listadas en `requirements.txt`.
+- Crea un archivo `.env` con variables de entorno necesarias para la API y otros servicios externos.
+
+### Ejecución de Pruebas y Automatización
+
+Para ejecutar las pruebas de manera local, se proporciona un script `run_tests.bat`. Este script recorre los archivos de prueba en el directorio `tests/` y ejecuta cada prueba individualmente, pausando entre pruebas para permitir la revisión de los resultados.
+
+Ejemplo de uso en la línea de comandos:
+
+```bash
+# En la raíz del proyecto
+./run_tests.bat
+```
+
+La configuración de GitHub Actions y estos scripts aseguran una integración continua efectiva, ayudando a mantener la estabilidad del código y reducir errores.
+
