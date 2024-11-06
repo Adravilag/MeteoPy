@@ -4,13 +4,35 @@
     "min_point_size": 5,
     "label_threshold": 400,
     "default_selected_data": "temperature_mean",
-    "map_xlim": [-7.6, -1.5],
-    "map_ylim": [35.8, 39],
+    "map_xlim": [
+        -7.6,
+        -1.5
+    ],
+    "map_ylim": [
+        35.8,
+        39
+    ],
     "shapefile_path": "config/shp/gadm41_ESP_4.shp",
     "language": "en",
-    "data_directory": "data", 
+    "data_directory": "data",
+    "version": "1.1.4",
     "comunidades": [
         "ANDALUCIA",
-        "VALENCIA"
-    ]
+        "VALENCIA",
+        "CATALUÑA",
+        "MADRID",
+        "GALICIA"
+    ],
+    "api_settings": {
+        "base_url": "https://api.open-meteo.com/v1/forecast",
+        "daily_params": [
+            "temperature_2m_max",
+            "temperature_2m_min",
+            "windspeed_10m_max",
+            "windgusts_10m_max",
+            "winddirection_10m_dominant",
+            "precipitation_sum"
+        ],
+        "timezone": "Europe/Madrid"
+    }
 }

@@ -23,3 +23,5 @@ shapely==2.0.6
 six==1.16.0
 tzdata==2024.2
 urllib3==2.2.3
+pywin32
+python-dotenv

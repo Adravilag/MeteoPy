@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
 from matplotlib.widgets import Button
 from datetime import datetime
-import sys
 
 def cls():
     """Limpia la consola."""
@@ -38,18 +37,25 @@ def cargar_traducciones(idioma="es"):
         with open(os.path.join(locales_dir, 'es.json'), 'r', encoding='utf-8') as f:
             return json.load(f)
 
-# Variable global para rastrear el último punto sobre el que se pasó el ratón
-last_locality = None
-
 # Inicializar parámetros desde la configuración
 config = cargar_configuracion()
 traducciones = cargar_traducciones(config.get("language", "es"))
 
+# Variables de configuración
 label_threshold = config.get("label_threshold", 400)
 min_point_size = config.get("min_point_size", 5)
 max_point_size = config.get("max_point_size", 500)
-data_dir = config.get("data_directory", "Data")
+data_dir = config.get("data_directory", "data")
 shapefile_path = config.get("shapefile_path", "config/shp/gadm41_ESP_4.shp")
+
+# Unidad de medida para cada tipo de dato
+unit_dict = {
+    "temperature_min": "°C",
+    "temperature_max": "°C",
+    "wind_gusts": "km/h",
+    "wind_speed": "km/h",
+    "precipitation_sum": "mm"
+}
 
 # Verificar si el archivo shapefile existe
 if not os.path.exists(shapefile_path):
@@ -59,23 +65,10 @@ if not os.path.exists(shapefile_path):
 # Cargar el shapefile de España
 try:
     espana_shapefile = gpd.read_file(shapefile_path)
-    comunidades = {
-        "ANDALUCIA": espana_shapefile[espana_shapefile['NAME_1'] == 'Andalucía'],
-        "VALENCIA": espana_shapefile[espana_shapefile['NAME_1'] == 'Comunidad Valenciana']
-    }
 except Exception as e:
     print(traducciones["error_loading_shapefile"])
     print(f"Detalles del error: {e}")
     exit()
-
-# Definir la unidad de medida para cada tipo de dato
-unit_dict = {
-    "temperature_min": "°C",
-    "temperature_max": "°C",
-    "wind_gusts": "km/h",
-    "wind_speed": "km/h",
-    "precipitation_sum": "mm"
-}
 
 # Función para listar archivos disponibles en el directorio de datos
 def listar_archivos_disponibles():
@@ -86,7 +79,7 @@ def listar_archivos_disponibles():
     
     for root, dirs, files in os.walk(directorio_completo):
         for file in files:
-            if file.startswith("MeteoData_") and file.endswith(".xlsx"):
+            if file.startswith("MeteoData_") and (file.endswith(".xlsx") or file.endswith(".xlsm")):
                 archivos.append(os.path.join(root, file))
 
     if not archivos:
@@ -119,16 +112,34 @@ except FileNotFoundError:
     print(f"Error: El archivo {archivo_seleccionado} no se pudo encontrar.")
     exit()
 
+# Filtrar las comunidades autónomas que tienen datos disponibles
+comunidades_con_datos = []
+comunidades = { 
+    "ANDALUCIA": espana_shapefile[espana_shapefile['NAME_1'] == 'Andalucía'],
+    "VALENCIA": espana_shapefile[espana_shapefile['NAME_1'] == 'Comunidad Valenciana']
+}
+
+for hoja in hojas_disponibles:
+    df = pd.read_excel(archivo_seleccionado, sheet_name=hoja)
+    
+    # Verificar que el DataFrame no esté vacío y que contenga datos en las columnas correspondientes
+    # Usamos los índices de columna 7 a 10 (equivalente a H, I, J, K en Excel)
+    if not df.empty and df.iloc[:, 7:11].count().sum() > 0:
+        comunidades_con_datos.append(hoja)
+
+# Filtrar las comunidades según los datos disponibles
+comunidades = {k: v for k, v in comunidades.items() if k in comunidades_con_datos}
+
 print(traducciones["available_autonomous_communities"])
-for i, hoja in enumerate(hojas_disponibles, start=1):
-    print(f"{i}. {hoja}")
+for i, comunidad in enumerate(comunidades.keys(), start=1):
+    print(f"{i}. {comunidad}")
 
 # Permitir que el usuario seleccione la hoja (comunidad autónoma)
 while True:
     try:
         seleccion_hoja = int(input(traducciones["select_community"])) - 1
-        if 0 <= seleccion_hoja < len(hojas_disponibles):
-            sheet_name = hojas_disponibles[seleccion_hoja]
+        if 0 <= seleccion_hoja < len(comunidades):
+            sheet_name = list(comunidades.keys())[seleccion_hoja]
             break
         else:
             print(traducciones["selection_out_of_range"])
@@ -147,7 +158,7 @@ if region_map is None or region_map.empty:
     print(f"Error: No se encontró la región correspondiente para '{sheet_name}' en el shapefile.")
     exit()
 
-# Crear una figura para el gráfico
+# Crear la figura y gráficos de datos meteorológicos
 fig, ax1 = plt.subplots(figsize=(10, 8))
 fig.canvas.manager.set_window_title(f"Mapa de {sheet_name} - Datos Meteorológicos")
 
