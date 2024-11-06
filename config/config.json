@@ -13,15 +13,12 @@
         39
     ],
     "shapefile_path": "config/shp/gadm41_ESP_4.shp",
-    "language": "en",
+    "language": "es",
     "data_directory": "data",
     "version": "1.1.4",
     "comunidades": [
         "ANDALUCIA",
-        "VALENCIA",
-        "CATALUÑA",
-        "MADRID",
-        "GALICIA"
+        "VALENCIA"
     ],
     "api_settings": {
         "base_url": "https://api.open-meteo.com/v1/forecast",

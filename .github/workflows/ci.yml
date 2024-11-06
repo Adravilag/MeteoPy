@@ -22,3 +22,5 @@ jobs:
           python -m venv venv
           . venv/bin/activate
           pip install -r requirements.txt
+          # Eliminar pywin32 en entornos no Windows
+          sed -i '/pywin32/d' requirements.txt

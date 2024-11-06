@@ -1,56 +1,58 @@
+# Changelog - 2024-11-06
 
-# Changelog
+## Version 1.4.0 - Project Architecture Updates
 
-All notable changes to this project will be documented in this file.
+### Summary of Changes
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+This update introduces significant modifications to the project structure, dependency management, and automated changelog generation. Below are detailed changes for each relevant file.
 
-## [1.1.4] - 2024-11-06
-### Added
-- Added support for configurable visualization parameters in `config.json`.
-- Implemented `ci.yml` GitHub Actions workflow for continuous integration.
-- New `bin` batch files for running `geoPy.py` and `metPy.py` scripts with localization options.
+### Detailed Changes by File
 
-### Changed
-- Refactored `core.py` and `metPy.py` to use modular functions from `utils.py`.
-- Moved `geoPy.py` and `metPy.py` to `src` directory for a clearer project structure.
+#### `.gitignore`
+- Added `temp` to exclude temporary files from version control.
+- Adjusted the `__pycache__` entry to improve handling of Python cache files.
 
-### Fixed
-- Corrected issues with Excel file handling in `metPy.py` to avoid file locks.
+#### `bin/scripts/generate_changelog.py`
+- **New file**: Created `generate_changelog.py` in the `bin/scripts/` directory to automate changelog generation.
+- **Key functionalities**:
+  - Extraction of recent commits from the repository using `git log`.
+  - Retrieval of differences in each commit using `git diff`.
+  - Generation and storage of a detailed Markdown file documenting changes.
 
-## [1.1.3] - 2024-11-05
-### Added
-- Integrated `.env` configuration file support for sensitive information like `GITHUB_TOKEN`.
-- Added error handling for API rate limits and network issues in `data_acquisition` module.
+#### `README.md`
+- Updated documentation to reflect changes in the project structure and new automation scripts.
+- Added details on environment configuration and the use of the changelog generation script.
 
-### Changed
-- Updated `architecture.md` to reflect new modules and functions.
+#### `src/core.py`
+- Refactored to improve modularity and facilitate interaction between modules.
+- **New functions**:
+  - `menu_principal()` to organize user navigation through various application options.
+  - `seleccionar_comunidad()` added to allow dynamic selection of the autonomous community.
 
-### Fixed
-- Fixed `data_processing` module to handle missing or outlier values in API data.
+#### `config/config.json`
+- Updated default configurations.
+- **New parameters added**:
+  - `language`: Defines the interface language.
+  - `api_settings`: Contains configurations for interaction with the Open-Meteo API, such as `base_url` and `daily_params`.
 
-## [1.1.2] - 2024-11-05
-### Added
-- Included initial CI/CD setup for GitHub Actions.
-- Introduced locale support for English and Spanish (`locales/en.json` and `locales/es.json`).
+#### `.github/workflows/ci.yml`
+- Modified CI/CD workflow steps to integrate unit and integration tests.
+- **Key changes**:
+  - Removed redundant steps.
+  - Updated Python version used in tests.
+  - Improved setup steps for dependency installation and test execution.
 
-### Changed
-- Refined project structure with modular directories for core, data processing, and visualization.
-- Updated `config.json` to include `comunidades` list and API settings.
+#### `MeteoWave_License.txt`
+- Updated license to reflect the current project version.
+- Resolved version conflicts within the license file.
 
-### Fixed
-- Resolved issues with data formatting in Excel templates.
+### Error Handling Improvements
+- Added exception handling in multiple parts of the code to manage common errors, such as missing configuration files or HTTP request failures.
 
-## [1.1.1] - 2024-11-05
-### Added
-- Implemented data visualization with dynamic map interaction in `visualization/geoPy.py`.
+### General Refactoring
+- Restructured directories for better project organization.
+- Modularized code in `core.py`, `data_acquisition.py`, and `data_processing.py` to enhance maintainability and scalability.
 
-### Changed
-- Reorganized `config` directory to include `templates` for Excel files.
+---
 
-## [1.1.0] - 2024-11-01
-### Added
-- Initial release of **MeteoWave** with modules for data acquisition, processing, and visualization.
-- Basic batch files for executing Python scripts.
-- Added `config.json` for centralized project configuration.
+**Note:** This update marks a significant milestone in the evolution of **MeteoWave**, focusing on automation and continuous improvement of integration and deployment processes, as well as better project organization to facilitate future expansions and collaborations.
