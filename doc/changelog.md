@@ -1,5 +1,27 @@
 # Changelog - 2024-11-06
 
+## Version 1.5.0 - Project Architecture Updates
+
+### Added
+- Implemented translations for English and Spanish across the application.
+- Added weather data processing functionalities with community and date selection options.
+- Integrated shapefile data visualization for autonomous communities.
+
+### Fixed
+- Resolved issues with button event handling in the GeoPy module.
+- Addressed configuration loading for smoother setup across `geo` and `met` arguments.
+- Fixed translation loading errors in app_runner.
+
+### Changed
+- Minor version updated to support expanded translations and configurable language options.
+- Enhanced button creation and event handling in the `geoPy` visualization.
+- Refined user prompts for selecting community and data file.
+
+### Notes
+- Additional optimizations applied for loading shapefile data and handling errors in missing files.
+- Documentation updated for configuration setup and command-line usage instructions.
+
+
 ## Version 1.4.0 - Project Architecture Updates
 
 ### Summary of Changes
