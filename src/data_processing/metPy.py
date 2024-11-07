@@ -1,5 +1,3 @@
-# metPy.py
-
 import os
 import pandas as pd
 import win32com.client as win32
@@ -8,6 +6,8 @@ from datetime import datetime
 from dotenv import load_dotenv
 from utils.utils import cargar_configuracion, cargar_traducciones
 import time
+from database.db_connector import insertar_datos, db
+from bson import ObjectId
 
 def main(config, traducciones):
     # Configuración del proyecto
@@ -43,7 +43,9 @@ def main(config, traducciones):
             datos = response.json()
             if fecha_str in datos['daily']['time']:
                 index = datos['daily']['time'].index(fecha_str)
-                return {param: datos['daily'][param][index] for param in api_settings['daily_params']}
+                result = {param: datos['daily'][param][index] for param in api_settings['daily_params']}
+                print(f"Datos obtenidos para {fecha_str}: {result}")  # Línea de depuración
+                return result
             else:
                 print(f"No se encontraron datos para la fecha {fecha_str}")
         else:
@@ -52,7 +54,6 @@ def main(config, traducciones):
 
     def copiar_plantilla(fecha):
         """Copia la plantilla si no existe un archivo de datos para la fecha dada."""
-        # Asegurarse de que la ruta de la plantilla es correcta
         if not os.path.exists(plantilla):
             print(f"Error: La plantilla no se encuentra en la ruta especificada: {plantilla}")
             return None
@@ -63,7 +64,6 @@ def main(config, traducciones):
             return archivo_destino
 
         try:
-            # Usar DispatchEx para iniciar una nueva instancia de Excel
             excel = win32.DispatchEx("Excel.Application")
             workbook = excel.Workbooks.Open(plantilla)
             workbook.SaveAs(archivo_destino, FileFormat=52)
@@ -75,7 +75,7 @@ def main(config, traducciones):
             return None
         finally:
             try:
-                excel.Quit()  # Asegúrate de cerrar Excel correctamente
+                excel.Quit()
             except Exception as e:
                 print(f"Error al cerrar Excel: {e}")
 
@@ -125,6 +125,20 @@ def main(config, traducciones):
                 except Exception as e:
                     print("Error al cerrar Excel:", e)
 
+    def obtener_localidad_id(nombre_localidad):
+        """Obtiene el ObjectId de la localidad desde la colección Localidades o la crea si no existe."""
+        resultado = db.Localidades.find_one({"nombre": nombre_localidad})
+        if resultado:
+            print(f"localidad_id encontrado para {nombre_localidad}: {resultado['_id']}")  # Línea de depuración
+            return resultado["_id"]
+        else:
+            # Si no se encuentra la localidad, la agregamos
+            nuevo_documento = {"nombre": nombre_localidad}
+            db.Localidades.insert_one(nuevo_documento)
+            nuevo_id = nuevo_documento["_id"]  # Obtenemos el ID del nuevo documento
+            print(f"Localidad {nombre_localidad} creada con id: {nuevo_id}")  # Línea de depuración
+            return nuevo_id
+
     def procesar_datos(fecha, comunidad):
         archivo_destino = copiar_plantilla(fecha)
         if not archivo_destino:
@@ -134,17 +148,41 @@ def main(config, traducciones):
         try:
             workbook = excel.Workbooks.Open(archivo_destino)
             ws = workbook.Sheets(comunidad)
+            datos_mongodb = []  # Lista para almacenar los datos que se subirán a MongoDB
+
             for row in range(2, ws.UsedRange.Rows.Count + 1):
+                localidad = ws.Cells(row, 2).Value  # Nombre de la localidad en la columna B
                 coordenadas = ws.Cells(row, 3).Value
-                if coordenadas:
+                
+                if localidad and coordenadas:
                     latitud, longitud = map(float, coordenadas.split(', '))
-                    datos = obtener_datos_meteo(latitud, longitud, fecha)
-                    if datos:
-                        for i, param in enumerate(api_settings['daily_params'], start=8):
-                            ws.Cells(row, i).Value = datos[param]
-                        ws.Cells(row, 14).Value = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                    localidad_id = obtener_localidad_id(localidad)
+                    if localidad_id:
+                        datos = obtener_datos_meteo(latitud, longitud, fecha)
+                        if datos:
+                            print(f"Datos meteorológicos para {localidad}: {datos}")  # Línea de depuración
+                            for i, param in enumerate(api_settings['daily_params'], start=8):
+                                ws.Cells(row, i).Value = datos[param]
+                            ws.Cells(row, 14).Value = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                            
+                            # Preparar los datos para MongoDB
+                            datos_mongodb.append({
+                                "localidad_id": localidad_id,  # Almacena la referencia a la localidad
+                                "fecha": fecha.strftime('%Y-%m-%d'),
+                                "metrics": datos
+                            })
+
             workbook.Save()
             print(f"Datos meteorológicos guardados en {archivo_destino}")
+
+            # Subir los datos a MongoDB
+            if datos_mongodb:
+                print("Datos a subir a MongoDB:", datos_mongodb)  # Línea de depuración
+                insertar_datos(datos_mongodb)
+                print("Datos subidos a MongoDB exitosamente.")
+            else:
+                print("No hay datos para subir a MongoDB.")
+
         except Exception as e:
             print(f"Error al procesar el archivo de datos: {e}")
         finally:

@@ -218,15 +218,15 @@ def main(config=None, traducciones=None):
 global_buttons = []
 
 def create_buttons(fig, traducciones, set_selected_data):
-    button_width = 0.12
-    button_height = 0.05
+    button_width = 0.15
+    button_height = 0.06
 
     def on_button_click(data_type):
         print(f"Clicked button for: {data_type}")
         set_selected_data(data_type)
 
     data_types = ['temperature_min', 'temperature_max', 'wind_gusts', 'wind_speed', 'precipitation_sum']
-    positions = [0.1, 0.24, 0.38, 0.52, 0.66]
+    positions = [0.06,0.24,0.42,0.6,0.7]
     for data_type, pos in zip(data_types, positions):
         ax_button = plt.axes([pos, 0.01, button_width, button_height])
         # Línea modificada para aplicar traducciones
