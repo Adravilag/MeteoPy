@@ -17,7 +17,6 @@ def main(config, traducciones):
     api_settings = config.get("api_settings", {})
 
     def obtener_fechas_disponibles_api(latitud, longitud):
-        """Obtiene las fechas de pronóstico disponibles desde la API de Open-Meteo."""
         url = f"{api_settings['base_url']}?latitude={latitud}&longitude={longitud}&daily={','.join(api_settings['daily_params'])}&timezone={api_settings['timezone']}"
         for intento in range(5):  # Máximo 5 reintentos
             response = requests.get(url)
@@ -31,12 +30,10 @@ def main(config, traducciones):
                 return []
         print("Se alcanzó el número máximo de reintentos.")
         return []
-    
+
     def obtener_datos_meteo(latitud, longitud, fecha):
-        """Obtiene datos meteorológicos para una fecha y coordenadas específicas desde la API."""
         fecha_str = fecha.strftime('%Y-%m-%d')
-        url = (f"{api_settings['base_url']}?latitude={latitud}&longitude={longitud}"
-               f"&daily={','.join(api_settings['daily_params'])}&timezone={api_settings['timezone']}")
+        url = (f"{api_settings['base_url']}?latitude={latitud}&longitude={longitud}&daily={','.join(api_settings['daily_params'])}&timezone={api_settings['timezone']}")
         
         response = requests.get(url)
         if response.status_code == 200:
@@ -44,7 +41,7 @@ def main(config, traducciones):
             if fecha_str in datos['daily']['time']:
                 index = datos['daily']['time'].index(fecha_str)
                 result = {param: datos['daily'][param][index] for param in api_settings['daily_params']}
-                print(f"Datos obtenidos para {fecha_str}: {result}")  # Línea de depuración
+                # print(f"Datos obtenidos para {fecha_str}: {result}")  # Línea de depuración
                 return result
             else:
                 print(f"No se encontraron datos para la fecha {fecha_str}")
@@ -53,7 +50,6 @@ def main(config, traducciones):
         return None    
 
     def copiar_plantilla(fecha):
-        """Copia la plantilla si no existe un archivo de datos para la fecha dada."""
         if not os.path.exists(plantilla):
             print(f"Error: La plantilla no se encuentra en la ruta especificada: {plantilla}")
             return None
@@ -69,6 +65,16 @@ def main(config, traducciones):
             workbook.SaveAs(archivo_destino, FileFormat=52)
             workbook.Close(False)
             print(f"{traducciones['template_copied']} {archivo_destino}")
+
+            # Establecer la fecha en la celda F2 de la hoja "Macros"
+            workbook = excel.Workbooks.Open(archivo_destino)
+            ws_macros = workbook.Sheets("Macros")
+            # Establecer la fecha en la celda F2 de la hoja "Macros"
+            ws_macros.Range("F2").Value = fecha.strftime('%d/%m/%Y')  # Esto convierte a string
+            ws_macros.Range("F2").NumberFormat = "dd/mm/yy"  # Establecer el formato de la celda
+            workbook.Save()
+            workbook.Close(False)
+
             return archivo_destino
         except Exception as e:
             print(f"{traducciones['error_copy_template']}: {e}")
@@ -80,7 +86,6 @@ def main(config, traducciones):
                 print(f"Error al cerrar Excel: {e}")
 
     def listar_fechas_disponibles(comunidad, latitud, longitud):
-        """Lista las fechas disponibles desde la API y verifica si están completas o incompletas en los archivos locales."""
         fechas_api = obtener_fechas_disponibles_api(latitud, longitud)
         if not fechas_api:
             print(traducciones["no_dates_found"])
@@ -104,7 +109,6 @@ def main(config, traducciones):
         return sorted(fechas_disponibles, key=lambda x: x[0])
 
     def verificar_datos_completos(archivo, comunidad):
-        """Verifica si la hoja de la comunidad tiene datos completos."""
         excel = None
         workbook = None
         try:
@@ -125,18 +129,23 @@ def main(config, traducciones):
                 except Exception as e:
                     print("Error al cerrar Excel:", e)
 
-    def obtener_localidad_id(nombre_localidad):
+    def obtener_localidad_id(nombre_localidad, comunidad_autonoma, provincia, oid):
         """Obtiene el ObjectId de la localidad desde la colección Localidades o la crea si no existe."""
         resultado = db.Localidades.find_one({"nombre": nombre_localidad})
         if resultado:
-            print(f"localidad_id encontrado para {nombre_localidad}: {resultado['_id']}")  # Línea de depuración
+            # print(f"localidad_id encontrado para {nombre_localidad}: {resultado['_id']}")  # Línea de depuración
             return resultado["_id"]
         else:
-            # Si no se encuentra la localidad, la agregamos
-            nuevo_documento = {"nombre": nombre_localidad}
+            # Si no se encuentra la localidad, la agregamos con la comunidad autónoma, la provincia y el oid
+            nuevo_documento = {
+                "nombre": nombre_localidad,
+                "comunidad_autonoma": comunidad_autonoma,
+                "provincia": provincia,
+                "oid": oid
+            }
             db.Localidades.insert_one(nuevo_documento)
             nuevo_id = nuevo_documento["_id"]  # Obtenemos el ID del nuevo documento
-            print(f"Localidad {nombre_localidad} creada con id: {nuevo_id}")  # Línea de depuración
+            # print(f"Localidad {nombre_localidad} creada con id: {nuevo_id}")  # Línea de depuración
             return nuevo_id
 
     def procesar_datos(fecha, comunidad):
@@ -153,14 +162,16 @@ def main(config, traducciones):
             for row in range(2, ws.UsedRange.Rows.Count + 1):
                 localidad = ws.Cells(row, 2).Value  # Nombre de la localidad en la columna B
                 coordenadas = ws.Cells(row, 3).Value
+                oid = ws.Cells(row, 1).Value  # Obtener el OID de la columna A
+                provincia = ws.Cells(row, 5).Value  # Suponiendo que la provincia está en la columna E
                 
                 if localidad and coordenadas:
                     latitud, longitud = map(float, coordenadas.split(', '))
-                    localidad_id = obtener_localidad_id(localidad)
+                    localidad_id = obtener_localidad_id(localidad, comunidad, provincia, oid)  # Pasar la comunidad autónoma, la provincia y el oid al crear la localidad
                     if localidad_id:
                         datos = obtener_datos_meteo(latitud, longitud, fecha)
                         if datos:
-                            print(f"Datos meteorológicos para {localidad}: {datos}")  # Línea de depuración
+                            # print(f"Datos meteorológicos para {localidad}: {datos}")  # Línea de depuración
                             for i, param in enumerate(api_settings['daily_params'], start=8):
                                 ws.Cells(row, i).Value = datos[param]
                             ws.Cells(row, 14).Value = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
