@@ -1,4 +1,25 @@
-# Changelog - 2024-11-06
+# Changelog - 2024-11-08
+
+## Version 1.6.0 - Data Processing and Export Enhancements
+
+### Added
+Implemented functionality to export weather data to CSV files based on specified dates.
+Developed a method to upload CSV data to MongoDB directly after export.
+Enhanced data retrieval with improved handling of locality information from MongoDB.
+
+### Fixed
+Resolved date formatting issues in Excel, ensuring that the date in cell F2 displays correctly as DD/MM/YYYY.
+Addressed exceptions thrown during the export of data to Excel when community sheets are missing or improperly formatted.
+
+### Changed
+Updated the copiar_plantilla method to better handle date formatting in Excel and to ensure data consistency across the application.
+Refactored the exportar_datos_a_excel function to include checks for document insertion and overwrite in MongoDB.
+Adjusted CSV export functionality to streamline the writing process and ensure proper header alignment.
+
+### Notes
+The export and upload processes now include error handling to provide feedback on the success or failure of operations.
+Documentation updated to reflect changes in data processing logic and usage instructions for the new export features.
+
 
 ## Version 1.5.0 - Project Architecture Updates
 
